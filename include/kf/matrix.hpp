@@ -166,6 +166,7 @@ public:
             // sqrt of a number <= 0: A is not positive definite (in KF: broken P or R)
             if (diag <= T{0})
                 throw std::runtime_error("Matrix is not positive definite, Cholesky failed.");
+            // std::sqrt can run at compile time (constexpr) since c++26
             L(j, j) = std::sqrt(diag);
 
             // elements below the diagonal in column j
@@ -187,6 +188,18 @@ public:
     [[nodiscard]] constexpr Matrix<R, K, T> solve(const Matrix<R, K, T>& B) const requires (R == C)
     {
         const auto L = cholesky();
+
+#ifdef __cpp_contracts
+        // we divide by L(i, i) below, so it must not be zero.
+        // cholesky() already promises every L(i, i) > 0 (it throws otherwise).
+        // the user can't break this, only a bug in cholesky() can.
+        // that's why it's a contract_assert and not an exception.
+        contract_assert([&] {
+            for (std::size_t i = 0; i < R; ++i)
+                if (!(L(i, i) > T{0})) return false;
+            return true;
+        }());
+#endif
 
         // forward substitution: top to bottom, row i has one new unknown U(i, c)
         Matrix<R, K, T> U;

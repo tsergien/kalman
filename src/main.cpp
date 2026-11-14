@@ -150,8 +150,9 @@ int main(int argc, char** argv)
     std::mt19937 rng(c.seed);
     std::normal_distribution<double> std_normal(0.0, 1.0);
 
-    // truth starts at origin moving (2, 1) m/s. filter starts at a wrong position with zero velocity.
-    Matrix<4, 1> truth{0, 0, 2.0, 1.0};
+    // state layout everywhere (F, H, Q, P): [x, y, vx, vy]
+    // truth starts at the origin, vx = 2 m/s (right), vy = 1 m/s (up). filter starts at a wrong position, zero velocity.
+    Matrix<4, 1> truth{0, 0, 2.0, 1.0}; // x, y, vx, vy
     KalmanFilter<4> kf(Matrix<4, 1>{c.x0_err, -c.x0_err, 0, 0}, c.p0 * Matrix<4, 4>::identity());
 
     // two turns by turn_deg: a sharp left (2 s), 15 s straight, a slower right (4 s).

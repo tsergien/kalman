@@ -17,6 +17,13 @@ add_library(kf INTERFACE)
 target_include_directories(kf INTERFACE include)
 target_compile_options(kf INTERFACE -Wall -Wextra -Wpedantic -Wconversion -Werror)
 
+# contracts (c++26 pre/post/contract_assert): gcc 16 needs -fcontracts.
+# clang doesn't support them yet, the code skips the checks via #ifdef __cpp_contracts.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(kf INTERFACE -fcontracts)
+  target_link_options(kf INTERFACE -fcontracts)
+endif()
+
 # Sanitizers in Debug: catch out-of-bounds, use-after-free, UB early.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_options(kf INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)

@@ -29,6 +29,7 @@ public:
     {
         m_x = F * m_x;
         m_P = F * m_P * F.transpose() + Q;
+        check_covariance();
     }
 
     template<std::size_t M> // M = sensor measurement size
@@ -45,6 +46,7 @@ public:
         //P ← (I − KH) P (I − KH)ᵀ + K R Kᵀ
         auto IKH = I - K * H;
         m_P = IKH * m_P * IKH.transpose() + K * R * K.transpose();
+        check_covariance();
     }
 
     [[nodiscard]] Matrix<N, 1> state() const { return m_x; }
@@ -52,6 +54,27 @@ public:
     [[nodiscard]] Matrix<N, N> covariance() const { return m_P; }
 
 private:
+    /**
+     * P(i, i) is the variance of state variable i.
+     * a variance can never be negative: it's an average of squares.
+     * if it's negative, the filter is broken: bad math, bad Q or R, or lost precision.
+     * after that every estimate is garbage, but nothing crashes, so we'd never notice.
+     * it also catches NaN: NaN >= 0 is false.
+    */
+    void check_covariance() const
+    {
+#ifdef __cpp_contracts
+        // the loop is inside the lambda, not around contract_assert:
+        // gcc 16.2 silently drops a contract_assert placed inside a loop (compiler bug).
+        // "!(x >= 0)" instead of "x < 0" on purpose: it is true for NaN too.
+        contract_assert([&] {
+            for (std::size_t i = 0; i < N; ++i)
+                if (!(m_P(i, i) >= 0.0)) return false;
+            return true;
+        }());
+#endif
+    }
+
     Matrix<N, 1> m_x{}; // state estimate
     Matrix<N, N> m_P{}; // estimate covariance
 };
