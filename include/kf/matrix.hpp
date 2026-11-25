@@ -21,7 +21,7 @@ public:
         
         std::copy(elements.begin(), elements.end(), m_data.begin());
     }
-    
+
     static constexpr std::size_t rows() {return R;}
     static constexpr std::size_t cols() {return C;}
     
@@ -35,7 +35,13 @@ public:
         }
         return *this;
     }
-    [[nodiscard]] friend constexpr Matrix operator+(Matrix lhs, const Matrix& rhs) {return lhs += rhs;}
+
+    [[nodiscard]] friend constexpr Matrix 
+    operator+(Matrix lhs, const Matrix& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
 
     constexpr Matrix& operator-=(const Matrix& rhs) {
         for (std::size_t i = 0; i < R * C; ++i)
@@ -44,7 +50,13 @@ public:
         }
         return *this;
     }
-    [[nodiscard]] friend constexpr Matrix operator-(Matrix lhs, const Matrix& rhs) {return lhs -= rhs;}
+
+    [[nodiscard]] friend constexpr Matrix 
+    operator-(Matrix lhs, const Matrix& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
 
     constexpr Matrix& operator*=(T a) {
         for (std::size_t i = 0; i < R * C; ++i)
@@ -53,8 +65,16 @@ public:
         }
         return *this;
     }
-    [[nodiscard]] friend constexpr Matrix operator*(Matrix lhs, T a) {return lhs *= a;}
-    [[nodiscard]] friend constexpr Matrix operator*(T a, Matrix rhs) {return rhs *= a;}
+    [[nodiscard]] friend constexpr Matrix operator*(Matrix lhs, T a)
+    {
+        lhs *= a;
+        return lhs;
+    }
+    [[nodiscard]] friend constexpr Matrix operator*(T a, Matrix rhs)
+    {
+        rhs *= a;
+        return rhs;
+    }
 
     [[nodiscard]] constexpr Matrix<C, R, T> transpose() const
     {

@@ -10,7 +10,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-# Turn this ON once kalman.hpp exists and compiles
 option(KF_WITH_KALMAN "Build Kalman filter tests and demo" OFF)
 
 add_library(kf INTERFACE)
